@@ -1,0 +1,34 @@
+[package]
+name = "tree-sitter-yarn-spinner"
+description = "Yarn Spinner grammer for tree-sitter"
+version = "0.1.0"
+authors = ["yuna0x0 <yuna@yuna0x0.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["incremental", "parsing", "tree-sitter", "yarn-spinner"]
+categories = ["parser-implementations", "parsing", "text-editors"]
+repository = "https://github.com/yuna0x0/tree-sitter-yarn-spinner"
+edition = "2021"
+autoexamples = false
+
+build = "bindings/rust/build.rs"
+include = [
+  "bindings/rust/*",
+  "grammar.js",
+  "queries/*",
+  "src/*",
+  "tree-sitter.json",
+  "LICENSE",
+]
+
+[lib]
+path = "bindings/rust/lib.rs"
+
+[dependencies]
+tree-sitter-language = "0.1"
+
+[build-dependencies]
+cc = "1.2"
+
+[dev-dependencies]
+tree-sitter = "0.25.8"

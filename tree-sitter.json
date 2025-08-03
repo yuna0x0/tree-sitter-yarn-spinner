@@ -1,0 +1,39 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "yarn_spinner",
+      "camelcase": "YarnSpinner",
+      "title": "Yarn Spinner",
+      "scope": "source.yarnspinner",
+      "file-types": [
+        "yarn"
+      ],
+      "injection-regex": "^yarn_spinner$",
+      "class-name": "TreeSitterYarnSpinner"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Yarn Spinner grammer for tree-sitter",
+    "authors": [
+      {
+        "name": "yuna0x0",
+        "email": "yuna@yuna0x0.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/yuna0x0/tree-sitter-yarn-spinner"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
