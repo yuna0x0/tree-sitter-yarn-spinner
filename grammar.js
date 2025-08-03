@@ -1,5 +1,5 @@
 /**
- * @file Yarn Spinner grammer for tree-sitter
+ * @file Yarn Spinner grammar for tree-sitter
  * @author yuna0x0 <yuna@yuna0x0.com>
  * @license MIT
  */

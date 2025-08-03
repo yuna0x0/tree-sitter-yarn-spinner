@@ -6,9 +6,7 @@
       "camelcase": "YarnSpinner",
       "title": "Yarn Spinner",
       "scope": "source.yarnspinner",
-      "file-types": [
-        "yarn"
-      ],
+      "file-types": ["yarn"],
       "injection-regex": "^yarn_spinner$",
       "class-name": "TreeSitterYarnSpinner"
     }
@@ -16,7 +14,7 @@
   "metadata": {
     "version": "0.0.1",
     "license": "MIT",
-    "description": "Yarn Spinner grammer for tree-sitter",
+    "description": "Yarn Spinner grammar for tree-sitter",
     "authors": [
       {
         "name": "yuna0x0",

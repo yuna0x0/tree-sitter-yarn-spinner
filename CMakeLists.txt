@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project(tree-sitter-yarn-spinner
         VERSION "0.0.1"
-        DESCRIPTION "Yarn Spinner grammer for tree-sitter"
+        DESCRIPTION "Yarn Spinner grammar for tree-sitter"
         HOMEPAGE_URL "https://github.com/yuna0x0/tree-sitter-yarn-spinner"
         LANGUAGES C)
 

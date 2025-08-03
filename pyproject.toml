@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tree-sitter-yarn-spinner"
-description = "Yarn Spinner grammer for tree-sitter"
+description = "Yarn Spinner grammar for tree-sitter"
 version = "0.0.1"
 keywords = ["incremental", "parsing", "tree-sitter", "yarn-spinner"]
 classifiers = [
