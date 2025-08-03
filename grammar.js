@@ -7,31 +7,21 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-// This is an initial, non-indentation-aware subset of the Yarn Spinner grammar.
-// It is designed to successfully parse the provided test.yarn without using
-// external scanners. It supports:
-// - File-level hashtags
-// - Node headers: title, when (as opaque text), and generic headers
-// - Body delimiters: --- and ===
-// - Lines of text containing inline expressions {...}
-// - Hashtags at end of lines
-// - Commands: << ... >>
-// - Shortcut options: ->
-// - Line group items: =>
-// - Basic expression language: numbers, strings, variables ($id), identifiers,
-//   simple binary operators, parentheses, and function calls
-//
-// Notes:
-// - No indentation-sensitive constructs (INDENT/DEDENT) are included.
-// - "when" header expression is parsed as generic expression text in this phase.
-// - Keywords are not reserved; we keep the grammar simple and permissive.
-
 module.exports = grammar({
   name: "yarn_spinner",
 
-  conflicts: ($) => [[$.shortcut_option_statement], [$.line_group_statement]],
+  conflicts: ($) => [
+    [$.shortcut_option_statement],
+    [$.line_group_statement],
+    [$.if_clause],
+    [$.else_if_clause],
+    [$.else_clause],
+    [$.shortcut_option],
+    [$.line_group_item],
+  ],
 
-  // Keep default whitespace as extras and also allow comments
+  externals: ($) => [$.indent, $.dedent, $.blank_line_following_option],
+
   extras: ($) => [/\s/, $.comment],
 
   word: ($) => $.identifier,
@@ -39,7 +29,6 @@ module.exports = grammar({
   rules: {
     source_file: ($) => seq(repeat($.file_hashtag), repeat1($.node)),
 
-    // // comments starting with //
     comment: (_) => token(seq("//", /[^\r\n]*/)),
 
     // File-global hashtags at top of file (before any node)
@@ -51,7 +40,7 @@ module.exports = grammar({
       seq(
         repeat1(choice($.title_header, $.when_header, $.header)),
         field("body_start", alias("---", $.body_start)),
-        $.body,
+        repeat($.statement),
         field("body_end", alias("===", $.body_end)),
       ),
 
@@ -84,9 +73,6 @@ module.exports = grammar({
       token(seq(optional(/[ \t]+/), ":", optional(/[ \t]+/))),
     rest_of_line: (_) => token(/[^\r\n]+/),
 
-    // Body: sequence of statements until body_end (must be non-empty)
-    body: ($) => repeat1($.statement),
-
     // Statements
     statement: ($) =>
       choice(
@@ -94,13 +80,20 @@ module.exports = grammar({
         $.shortcut_option_statement,
         $.line_group_statement,
         $.command_statement,
+        $.if_statement,
+        $.set_statement,
+        $.call_statement,
+        $.declare_statement,
+        $.jump_statement,
+        $.return_statement,
+        seq($.indent, repeat($.statement), $.dedent),
       ),
 
     // Line: text/expressions, optional hashtags, newline
     line_statement: ($) =>
       seq(
         $.line_formatted_text,
-        optional($.line_condition), // allow simple condition forms using commands
+        optional($.line_condition),
         repeat($.hashtag),
         $.newline,
       ),
@@ -128,6 +121,96 @@ module.exports = grammar({
         ),
       ),
 
+    // If statements
+    if_statement: ($) =>
+      seq(
+        $.if_clause,
+        repeat($.else_if_clause),
+        optional($.else_clause),
+        $.command_start,
+        alias("endif", $.command_endif_kw),
+        $.command_end,
+      ),
+
+    if_clause: ($) =>
+      seq(
+        $.command_start,
+        alias("if", $.command_if_kw),
+        $.expression,
+        $.command_end,
+        repeat($.statement),
+      ),
+
+    else_if_clause: ($) =>
+      seq(
+        $.command_start,
+        alias("elseif", $.command_elseif_kw),
+        $.expression,
+        $.command_end,
+        repeat($.statement),
+      ),
+
+    else_clause: ($) =>
+      seq(
+        $.command_start,
+        alias("else", $.command_else_kw),
+        $.command_end,
+        repeat($.statement),
+      ),
+
+    // Set statement
+    set_statement: ($) =>
+      seq(
+        $.command_start,
+        alias("set", $.command_set_kw),
+        $.variable,
+        field("operator", choice("=", "to", "+=", "-=", "*=", "/=", "%=")),
+        $.expression,
+        $.command_end,
+      ),
+
+    // Call statement
+    call_statement: ($) =>
+      seq(
+        $.command_start,
+        alias("call", $.command_call_kw),
+        $.function_call,
+        $.command_end,
+      ),
+
+    // Declare statement
+    declare_statement: ($) =>
+      seq(
+        $.command_start,
+        alias("declare", $.command_declare_kw),
+        $.variable,
+        choice("=", "to"),
+        $.expression,
+        optional(seq(alias("as", $.as_kw), field("type", $.identifier))),
+        $.command_end,
+      ),
+
+    // Jump statements
+    jump_statement: ($) =>
+      choice(
+        seq(
+          $.command_start,
+          alias("jump", $.command_jump_kw),
+          field("destination", $.identifier),
+          $.command_end,
+        ),
+        seq(
+          $.command_start,
+          alias("detour", $.command_detour_kw),
+          field("destination", $.identifier),
+          $.command_end,
+        ),
+      ),
+
+    // Return statement
+    return_statement: ($) =>
+      seq($.command_start, alias("return", $.command_return_kw), $.command_end),
+
     // Hashtag
     hashtag: ($) => seq($.hashtag_marker, field("text", $.hashtag_text)),
     hashtag_marker: (_) => token("#"),
@@ -153,46 +236,64 @@ module.exports = grammar({
 
     // Shortcut options group
     shortcut_option_statement: ($) =>
-      seq(repeat($.shortcut_option), $.shortcut_option),
+      seq(
+        repeat($.shortcut_option),
+        $.shortcut_option,
+        optional($.blank_line_following_option),
+      ),
 
     shortcut_option: ($) =>
-      seq(alias("->", $.shortcut_arrow), $.line_statement),
+      seq(
+        alias("->", $.shortcut_arrow),
+        $.line_statement,
+        optional(seq($.indent, repeat($.statement), $.dedent)),
+      ),
 
     // Line group
     line_group_statement: ($) =>
-      seq(repeat($.line_group_item), $.line_group_item),
+      seq(
+        repeat($.line_group_item),
+        $.line_group_item,
+        optional($.blank_line_following_option),
+      ),
 
     line_group_item: ($) =>
-      seq(alias("=>", $.line_group_arrow), $.line_statement),
+      seq(
+        alias("=>", $.line_group_arrow),
+        $.line_statement,
+        optional(seq($.indent, repeat($.statement), $.dedent)),
+      ),
 
     // Newline token (named for clarity)
     newline: (_) => token(seq(optional("\r"), "\n")),
 
     // Text chunks for a line: any chars stopping at control markers
-    text: (_) =>
-      token(prec(-1, repeat1(/[^#<>{}\r\n\\]+|\\[\\{}#/<>\[\]]|[</]/))),
+    text: (_) => token(/[^#<>{}\r\n\\]+/),
 
     // Command delimiters and text
     command_start: (_) => token("<<"),
     command_end: (_) => token(">>"),
-    command_text_chunk: (_) => token(repeat1(/[^>{\r\n]+/)),
+    command_text_chunk: (_) => token(/[^>{\r\n]+/),
 
     // Expression delimiters
     expression_start: (_) => token("{"),
     expression_end: (_) => token("}"),
 
-    // Expression language (very small subset but enough for test file)
+    // Expression language
     expression: ($) =>
       choice(
         $.paren_expression,
         $.binary_expression,
         $.unary_expression,
-        $.call_expression,
+        $.function_call,
         $.member_expression,
         $.number,
         $.string,
         $.variable,
         $.identifier,
+        alias("true", $.keyword_true),
+        alias("false", $.keyword_false),
+        alias("null", $.keyword_null),
       ),
 
     paren_expression: ($) => seq("(", $.expression, ")"),
@@ -278,7 +379,7 @@ module.exports = grammar({
         ),
       ),
 
-    call_expression: ($) =>
+    function_call: ($) =>
       seq(
         field("function", $.identifier),
         "(",
