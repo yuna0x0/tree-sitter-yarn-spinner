@@ -60,43 +60,43 @@
             "named": false
           },
           {
-            "type": "kw_and",
+            "type": "and_kw",
             "named": true
           },
           {
-            "type": "kw_eq",
+            "type": "eq_kw",
             "named": true
           },
           {
-            "type": "kw_gt",
+            "type": "gt_kw",
             "named": true
           },
           {
-            "type": "kw_gte",
+            "type": "gte_kw",
             "named": true
           },
           {
-            "type": "kw_is",
+            "type": "is_kw",
             "named": true
           },
           {
-            "type": "kw_lt",
+            "type": "lt_kw",
             "named": true
           },
           {
-            "type": "kw_lte",
+            "type": "lte_kw",
             "named": true
           },
           {
-            "type": "kw_neq",
+            "type": "neq_kw",
             "named": true
           },
           {
-            "type": "kw_or",
+            "type": "or_kw",
             "named": true
           },
           {
-            "type": "kw_xor",
+            "type": "xor_kw",
             "named": true
           },
           {
@@ -126,7 +126,7 @@
       "required": true,
       "types": [
         {
-          "type": "command_call_kw",
+          "type": "call_kw",
           "named": true
         },
         {
@@ -140,32 +140,9 @@
         {
           "type": "function_call",
           "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "command_formatted_text",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "command_text_chunk",
-          "named": true
         },
         {
-          "type": "expression",
-          "named": true
-        },
-        {
-          "type": "expression_end",
-          "named": true
-        },
-        {
-          "type": "expression_start",
+          "type": "newline",
           "named": true
         }
       ]
@@ -184,11 +161,23 @@
           "named": true
         },
         {
-          "type": "command_formatted_text",
+          "type": "command_start",
           "named": true
         },
         {
-          "type": "command_start",
+          "type": "command_text",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "expression_end",
+          "named": true
+        },
+        {
+          "type": "expression_start",
           "named": true
         },
         {
@@ -226,10 +215,6 @@
           "named": true
         },
         {
-          "type": "command_declare_kw",
-          "named": true
-        },
-        {
           "type": "command_end",
           "named": true
         },
@@ -238,7 +223,15 @@
           "named": true
         },
         {
+          "type": "declare_kw",
+          "named": true
+        },
+        {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "newline",
           "named": true
         },
         {
@@ -257,15 +250,15 @@
       "required": true,
       "types": [
         {
-          "type": "command_else_kw",
-          "named": true
-        },
-        {
           "type": "command_end",
           "named": true
         },
         {
           "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "else_kw",
           "named": true
         },
         {
@@ -284,7 +277,73 @@
       "required": true,
       "types": [
         {
-          "type": "command_elseif_kw",
+          "type": "command_end",
+          "named": true
+        },
+        {
+          "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "elseif_kw",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "enum_case_statement",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "=",
+            "named": false
+          },
+          {
+            "type": "to",
+            "named": false
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "case_kw",
           "named": true
         },
         {
@@ -296,11 +355,53 @@
           "named": true
         },
         {
-          "type": "expression",
+          "type": "dedent",
           "named": true
         },
         {
-          "type": "statement",
+          "type": "indent",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "enum_statement",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "command_end",
+          "named": true
+        },
+        {
+          "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "endenum_kw",
+          "named": true
+        },
+        {
+          "type": "enum_case_statement",
+          "named": true
+        },
+        {
+          "type": "enum_kw",
           "named": true
         }
       ]
@@ -319,6 +420,10 @@
           "named": true
         },
         {
+          "type": "false_kw",
+          "named": true
+        },
+        {
           "type": "function_call",
           "named": true
         },
@@ -327,19 +432,11 @@
           "named": true
         },
         {
-          "type": "keyword_false",
-          "named": true
-        },
-        {
-          "type": "keyword_null",
-          "named": true
-        },
-        {
-          "type": "keyword_true",
-          "named": true
-        },
-        {
           "type": "member_expression",
+          "named": true
+        },
+        {
+          "type": "null_kw",
           "named": true
         },
         {
@@ -352,6 +449,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "true_kw",
           "named": true
         },
         {
@@ -488,6 +589,33 @@
     }
   },
   {
+    "type": "header_when_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "always_kw",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "if_kw",
+          "named": true
+        },
+        {
+          "type": "once_kw",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "if_clause",
     "named": true,
     "fields": {},
@@ -500,15 +628,15 @@
           "named": true
         },
         {
-          "type": "command_if_kw",
-          "named": true
-        },
-        {
           "type": "command_start",
           "named": true
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "if_kw",
           "named": true
         },
         {
@@ -531,10 +659,6 @@
           "named": true
         },
         {
-          "type": "command_endif_kw",
-          "named": true
-        },
-        {
           "type": "command_start",
           "named": true
         },
@@ -544,6 +668,10 @@
         },
         {
           "type": "else_if_clause",
+          "named": true
+        },
+        {
+          "type": "endif_kw",
           "named": true
         },
         {
@@ -559,7 +687,7 @@
     "fields": {
       "destination": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",
@@ -573,19 +701,35 @@
       "required": true,
       "types": [
         {
-          "type": "command_detour_kw",
-          "named": true
-        },
-        {
           "type": "command_end",
           "named": true
         },
         {
-          "type": "command_jump_kw",
+          "type": "command_start",
           "named": true
         },
         {
-          "type": "command_start",
+          "type": "detour_kw",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "expression_end",
+          "named": true
+        },
+        {
+          "type": "expression_start",
+          "named": true
+        },
+        {
+          "type": "jump_kw",
+          "named": true
+        },
+        {
+          "type": "newline",
           "named": true
         }
       ]
@@ -604,19 +748,19 @@
           "named": true
         },
         {
-          "type": "command_if_kw",
-          "named": true
-        },
-        {
-          "type": "command_once_kw",
-          "named": true
-        },
-        {
           "type": "command_start",
           "named": true
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "if_kw",
+          "named": true
+        },
+        {
+          "type": "once_kw",
           "named": true
         }
       ]
@@ -801,6 +945,99 @@
     }
   },
   {
+    "type": "once_alternate_clause",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "command_end",
+          "named": true
+        },
+        {
+          "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "else_kw",
+          "named": true
+        },
+        {
+          "type": "statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "once_clause",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "command_end",
+          "named": true
+        },
+        {
+          "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "if_kw",
+          "named": true
+        },
+        {
+          "type": "once_kw",
+          "named": true
+        },
+        {
+          "type": "statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "once_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "command_end",
+          "named": true
+        },
+        {
+          "type": "command_start",
+          "named": true
+        },
+        {
+          "type": "endonce_kw",
+          "named": true
+        },
+        {
+          "type": "once_alternate_clause",
+          "named": true
+        },
+        {
+          "type": "once_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "paren_expression",
     "named": true,
     "fields": {},
@@ -828,11 +1065,15 @@
           "named": true
         },
         {
-          "type": "command_return_kw",
+          "type": "command_start",
           "named": true
         },
         {
-          "type": "command_start",
+          "type": "newline",
+          "named": true
+        },
+        {
+          "type": "return_kw",
           "named": true
         }
       ]
@@ -886,15 +1127,19 @@
           "named": true
         },
         {
-          "type": "command_set_kw",
-          "named": true
-        },
-        {
           "type": "command_start",
           "named": true
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "newline",
+          "named": true
+        },
+        {
+          "type": "set_kw",
           "named": true
         },
         {
@@ -999,6 +1244,10 @@
           "named": true
         },
         {
+          "type": "enum_statement",
+          "named": true
+        },
+        {
           "type": "if_statement",
           "named": true
         },
@@ -1016,6 +1265,10 @@
         },
         {
           "type": "line_statement",
+          "named": true
+        },
+        {
+          "type": "once_statement",
           "named": true
         },
         {
@@ -1046,7 +1299,7 @@
         "required": true,
         "types": [
           {
-            "type": "identifier",
+            "type": "rest_of_line",
             "named": true
           }
         ]
@@ -1061,11 +1314,11 @@
           "named": true
         },
         {
-          "type": "header_title_kw",
+          "type": "newline",
           "named": true
         },
         {
-          "type": "newline",
+          "type": "title_kw",
           "named": true
         }
       ]
@@ -1088,7 +1341,7 @@
             "named": false
           },
           {
-            "type": "kw_not",
+            "type": "not_kw",
             "named": true
           }
         ]
@@ -1129,7 +1382,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "header_when_expression",
             "named": true
           }
         ]
@@ -1144,11 +1397,11 @@
           "named": true
         },
         {
-          "type": "header_when_kw",
+          "type": "newline",
           "named": true
         },
         {
-          "type": "newline",
+          "type": "when_kw",
           "named": true
         }
       ]
@@ -1255,6 +1508,14 @@
     "named": false
   },
   {
+    "type": "always_kw",
+    "named": true
+  },
+  {
+    "type": "and_kw",
+    "named": true
+  },
+  {
     "type": "as_kw",
     "named": true
   },
@@ -1271,23 +1532,11 @@
     "named": true
   },
   {
-    "type": "command_call_kw",
+    "type": "call_kw",
     "named": true
   },
   {
-    "type": "command_declare_kw",
-    "named": true
-  },
-  {
-    "type": "command_detour_kw",
-    "named": true
-  },
-  {
-    "type": "command_else_kw",
-    "named": true
-  },
-  {
-    "type": "command_elseif_kw",
+    "type": "case_kw",
     "named": true
   },
   {
@@ -1295,35 +1544,11 @@
     "named": true
   },
   {
-    "type": "command_endif_kw",
-    "named": true
-  },
-  {
-    "type": "command_if_kw",
-    "named": true
-  },
-  {
-    "type": "command_jump_kw",
-    "named": true
-  },
-  {
-    "type": "command_once_kw",
-    "named": true
-  },
-  {
-    "type": "command_return_kw",
-    "named": true
-  },
-  {
-    "type": "command_set_kw",
-    "named": true
-  },
-  {
     "type": "command_start",
     "named": true
   },
   {
-    "type": "command_text_chunk",
+    "type": "command_text",
     "named": true
   },
   {
@@ -1332,7 +1557,43 @@
     "extra": true
   },
   {
+    "type": "declare_kw",
+    "named": true
+  },
+  {
     "type": "dedent",
+    "named": true
+  },
+  {
+    "type": "detour_kw",
+    "named": true
+  },
+  {
+    "type": "else_kw",
+    "named": true
+  },
+  {
+    "type": "elseif_kw",
+    "named": true
+  },
+  {
+    "type": "endenum_kw",
+    "named": true
+  },
+  {
+    "type": "endif_kw",
+    "named": true
+  },
+  {
+    "type": "endonce_kw",
+    "named": true
+  },
+  {
+    "type": "enum_kw",
+    "named": true
+  },
+  {
+    "type": "eq_kw",
     "named": true
   },
   {
@@ -1341,6 +1602,18 @@
   },
   {
     "type": "expression_start",
+    "named": true
+  },
+  {
+    "type": "false_kw",
+    "named": true
+  },
+  {
+    "type": "gt_kw",
+    "named": true
+  },
+  {
+    "type": "gte_kw",
     "named": true
   },
   {
@@ -1356,15 +1629,11 @@
     "named": true
   },
   {
-    "type": "header_title_kw",
-    "named": true
-  },
-  {
-    "type": "header_when_kw",
-    "named": true
-  },
-  {
     "type": "identifier",
+    "named": true
+  },
+  {
+    "type": "if_kw",
     "named": true
   },
   {
@@ -1372,59 +1641,11 @@
     "named": true
   },
   {
-    "type": "keyword_false",
+    "type": "is_kw",
     "named": true
   },
   {
-    "type": "keyword_null",
-    "named": true
-  },
-  {
-    "type": "keyword_true",
-    "named": true
-  },
-  {
-    "type": "kw_and",
-    "named": true
-  },
-  {
-    "type": "kw_eq",
-    "named": true
-  },
-  {
-    "type": "kw_gt",
-    "named": true
-  },
-  {
-    "type": "kw_gte",
-    "named": true
-  },
-  {
-    "type": "kw_is",
-    "named": true
-  },
-  {
-    "type": "kw_lt",
-    "named": true
-  },
-  {
-    "type": "kw_lte",
-    "named": true
-  },
-  {
-    "type": "kw_neq",
-    "named": true
-  },
-  {
-    "type": "kw_not",
-    "named": true
-  },
-  {
-    "type": "kw_or",
-    "named": true
-  },
-  {
-    "type": "kw_xor",
+    "type": "jump_kw",
     "named": true
   },
   {
@@ -1432,7 +1653,27 @@
     "named": true
   },
   {
+    "type": "lt_kw",
+    "named": true
+  },
+  {
+    "type": "lte_kw",
+    "named": true
+  },
+  {
+    "type": "neq_kw",
+    "named": true
+  },
+  {
     "type": "newline",
+    "named": true
+  },
+  {
+    "type": "not_kw",
+    "named": true
+  },
+  {
+    "type": "null_kw",
     "named": true
   },
   {
@@ -1440,7 +1681,23 @@
     "named": true
   },
   {
+    "type": "once_kw",
+    "named": true
+  },
+  {
+    "type": "or_kw",
+    "named": true
+  },
+  {
     "type": "rest_of_line",
+    "named": true
+  },
+  {
+    "type": "return_kw",
+    "named": true
+  },
+  {
+    "type": "set_kw",
     "named": true
   },
   {
@@ -1456,8 +1713,24 @@
     "named": true
   },
   {
+    "type": "title_kw",
+    "named": true
+  },
+  {
     "type": "to",
     "named": false
+  },
+  {
+    "type": "true_kw",
+    "named": true
+  },
+  {
+    "type": "when_kw",
+    "named": true
+  },
+  {
+    "type": "xor_kw",
+    "named": true
   },
   {
     "type": "||",

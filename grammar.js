@@ -18,6 +18,8 @@ module.exports = grammar({
     [$.else_clause],
     [$.shortcut_option],
     [$.line_group_item],
+    [$.once_clause],
+    [$.once_alternate_clause],
   ],
 
   externals: ($) => [$.indent, $.dedent, $.blank_line_following_option],
@@ -47,18 +49,25 @@ module.exports = grammar({
     // Headers
     title_header: ($) =>
       seq(
-        alias("title", $.header_title_kw),
+        $.title_kw,
         $.header_delimiter,
-        field("title", $.identifier),
+        field("title", $.rest_of_line),
         $.newline,
       ),
 
     when_header: ($) =>
       seq(
-        alias("when", $.header_when_kw),
+        $.when_kw,
         $.header_delimiter,
-        field("expr", $.expression),
+        field("expr", $.header_when_expression),
         $.newline,
+      ),
+
+    header_when_expression: ($) =>
+      choice(
+        $.expression,
+        $.always_kw,
+        seq($.once_kw, optional(seq($.if_kw, $.expression))),
       ),
 
     header: ($) =>
@@ -79,13 +88,15 @@ module.exports = grammar({
         $.line_statement,
         $.shortcut_option_statement,
         $.line_group_statement,
-        $.command_statement,
         $.if_statement,
         $.set_statement,
         $.call_statement,
         $.declare_statement,
+        $.enum_statement,
         $.jump_statement,
         $.return_statement,
+        $.once_statement,
+        $.command_statement,
         seq($.indent, repeat($.statement), $.dedent),
       ),
 
@@ -107,16 +118,11 @@ module.exports = grammar({
     // Simple condition forms on a line like <<if expr>> or <<once ...>>
     line_condition: ($) =>
       choice(
+        seq($.command_start, $.if_kw, $.expression, $.command_end),
         seq(
           $.command_start,
-          alias("if", $.command_if_kw),
-          $.expression,
-          $.command_end,
-        ),
-        seq(
-          $.command_start,
-          alias("once", $.command_once_kw),
-          optional(seq(alias("if", $.command_if_kw), $.expression)),
+          $.once_kw,
+          optional(seq($.if_kw, $.expression)),
           $.command_end,
         ),
       ),
@@ -128,14 +134,14 @@ module.exports = grammar({
         repeat($.else_if_clause),
         optional($.else_clause),
         $.command_start,
-        alias("endif", $.command_endif_kw),
+        $.endif_kw,
         $.command_end,
       ),
 
     if_clause: ($) =>
       seq(
         $.command_start,
-        alias("if", $.command_if_kw),
+        $.if_kw,
         $.expression,
         $.command_end,
         repeat($.statement),
@@ -144,50 +150,99 @@ module.exports = grammar({
     else_if_clause: ($) =>
       seq(
         $.command_start,
-        alias("elseif", $.command_elseif_kw),
+        $.elseif_kw,
         $.expression,
         $.command_end,
         repeat($.statement),
       ),
 
     else_clause: ($) =>
+      seq($.command_start, $.else_kw, $.command_end, repeat($.statement)),
+
+    // Once statements
+    once_statement: ($) =>
+      seq(
+        $.once_clause,
+        optional($.once_alternate_clause),
+        $.command_start,
+        $.endonce_kw,
+        $.command_end,
+      ),
+
+    once_clause: ($) =>
       seq(
         $.command_start,
-        alias("else", $.command_else_kw),
+        $.once_kw,
+        optional(seq($.if_kw, $.expression)),
         $.command_end,
         repeat($.statement),
+      ),
+
+    once_alternate_clause: ($) =>
+      seq($.command_start, $.else_kw, $.command_end, repeat($.statement)),
+
+    // Enum statements
+    enum_statement: ($) =>
+      seq(
+        $.command_start,
+        $.enum_kw,
+        field("name", $.identifier),
+        $.command_end,
+        repeat1($.enum_case_statement),
+        $.command_start,
+        $.endenum_kw,
+        $.command_end,
+      ),
+
+    enum_case_statement: ($) =>
+      seq(
+        optional($.indent),
+        $.command_start,
+        $.case_kw,
+        field("name", $.identifier),
+        optional(
+          seq(
+            field("operator", choice("=", "to")),
+            field("value", $.expression),
+          ),
+        ),
+        $.command_end,
+        optional($.dedent),
       ),
 
     // Set statement
     set_statement: ($) =>
       seq(
         $.command_start,
-        alias("set", $.command_set_kw),
+        $.set_kw,
         $.variable,
         field("operator", choice("=", "to", "+=", "-=", "*=", "/=", "%=")),
         $.expression,
         $.command_end,
+        $.newline,
       ),
 
     // Call statement
     call_statement: ($) =>
       seq(
         $.command_start,
-        alias("call", $.command_call_kw),
+        $.call_kw,
         $.function_call,
         $.command_end,
+        $.newline,
       ),
 
     // Declare statement
     declare_statement: ($) =>
       seq(
         $.command_start,
-        alias("declare", $.command_declare_kw),
+        $.declare_kw,
         $.variable,
         choice("=", "to"),
         $.expression,
-        optional(seq(alias("as", $.as_kw), field("type", $.identifier))),
+        optional(seq($.as_kw, field("type", $.identifier))),
         $.command_end,
+        $.newline,
       ),
 
     // Jump statements
@@ -195,44 +250,67 @@ module.exports = grammar({
       choice(
         seq(
           $.command_start,
-          alias("jump", $.command_jump_kw),
+          $.jump_kw,
           field("destination", $.identifier),
           $.command_end,
+          $.newline,
         ),
         seq(
           $.command_start,
-          alias("detour", $.command_detour_kw),
+          $.jump_kw,
+          $.expression_start,
+          $.expression,
+          $.expression_end,
+          $.command_end,
+          $.newline,
+        ),
+        seq(
+          $.command_start,
+          $.detour_kw,
           field("destination", $.identifier),
           $.command_end,
+          $.newline,
+        ),
+        seq(
+          $.command_start,
+          $.detour_kw,
+          $.expression_start,
+          $.expression,
+          $.expression_end,
+          $.command_end,
+          $.newline,
         ),
       ),
 
     // Return statement
     return_statement: ($) =>
-      seq($.command_start, alias("return", $.command_return_kw), $.command_end),
+      seq($.command_start, $.return_kw, $.command_end, $.newline),
 
     // Hashtag
     hashtag: ($) => seq($.hashtag_marker, field("text", $.hashtag_text)),
     hashtag_marker: (_) => token("#"),
     hashtag_text: (_) => token(/[^\s#<>{}\r\n][^#<>{}\r\n]*/),
 
-    // Commands
+    // Commands - generic commands that don't match specific patterns
     command_statement: ($) =>
-      seq(
-        $.command_start,
-        $.command_formatted_text,
-        $.command_end,
-        repeat($.hashtag),
-        $.newline,
-      ),
-
-    command_formatted_text: ($) =>
-      repeat1(
-        choice(
-          $.command_text_chunk,
-          seq($.expression_start, $.expression, $.expression_end),
+      prec(
+        -1,
+        seq(
+          $.command_start,
+          repeat1(
+            choice(
+              $.command_text,
+              seq($.expression_start, $.expression, $.expression_end),
+            ),
+          ),
+          $.command_end,
+          repeat($.hashtag),
+          $.newline,
         ),
       ),
+
+    // Generic command text - matches anything except >> and { and keywords
+    command_text: (_) => token(prec(-1, /[^>{\r\n]+/)),
 
     // Shortcut options group
     shortcut_option_statement: ($) =>
@@ -244,7 +322,7 @@ module.exports = grammar({
 
     shortcut_option: ($) =>
       seq(
-        alias("->", $.shortcut_arrow),
+        $.shortcut_arrow,
         $.line_statement,
         optional(seq($.indent, repeat($.statement), $.dedent)),
       ),
@@ -259,7 +337,7 @@ module.exports = grammar({
 
     line_group_item: ($) =>
       seq(
-        alias("=>", $.line_group_arrow),
+        $.line_group_arrow,
         $.line_statement,
         optional(seq($.indent, repeat($.statement), $.dedent)),
       ),
@@ -270,14 +348,52 @@ module.exports = grammar({
     // Text chunks for a line: any chars stopping at control markers
     text: (_) => token(/[^#<>{}\r\n\\]+/),
 
-    // Command delimiters and text
+    // Command delimiters
     command_start: (_) => token("<<"),
     command_end: (_) => token(">>"),
-    command_text_chunk: (_) => token(/[^>{\r\n]+/),
+
+    // Shortcut and line group arrows
+    shortcut_arrow: (_) => token("->"),
+    line_group_arrow: (_) => token("=>"),
 
     // Expression delimiters
     expression_start: (_) => token("{"),
     expression_end: (_) => token("}"),
+
+    // Keywords - using token with regex to ensure they are recognized as separate tokens
+    title_kw: (_) => token("title"),
+    when_kw: (_) => token("when"),
+    always_kw: (_) => token("always"),
+    once_kw: (_) => token("once"),
+    if_kw: (_) => token("if"),
+    elseif_kw: (_) => token("elseif"),
+    else_kw: (_) => token("else"),
+    endif_kw: (_) => token("endif"),
+    endonce_kw: (_) => token("endonce"),
+    enum_kw: (_) => token("enum"),
+    endenum_kw: (_) => token("endenum"),
+    case_kw: (_) => token("case"),
+    set_kw: (_) => token("set"),
+    call_kw: (_) => token("call"),
+    declare_kw: (_) => token("declare"),
+    jump_kw: (_) => token("jump"),
+    detour_kw: (_) => token("detour"),
+    return_kw: (_) => token("return"),
+    as_kw: (_) => token("as"),
+    not_kw: (_) => token("not"),
+    and_kw: (_) => token("and"),
+    or_kw: (_) => token("or"),
+    xor_kw: (_) => token("xor"),
+    lte_kw: (_) => token("lte"),
+    gte_kw: (_) => token("gte"),
+    lt_kw: (_) => token("lt"),
+    gt_kw: (_) => token("gt"),
+    is_kw: (_) => token("is"),
+    eq_kw: (_) => token("eq"),
+    neq_kw: (_) => token("neq"),
+    true_kw: (_) => token("true"),
+    false_kw: (_) => token("false"),
+    null_kw: (_) => token("null"),
 
     // Expression language
     expression: ($) =>
@@ -291,9 +407,9 @@ module.exports = grammar({
         $.string,
         $.variable,
         $.identifier,
-        alias("true", $.keyword_true),
-        alias("false", $.keyword_false),
-        alias("null", $.keyword_null),
+        $.true_kw,
+        $.false_kw,
+        $.null_kw,
       ),
 
     paren_expression: ($) => seq("(", $.expression, ")"),
@@ -301,10 +417,7 @@ module.exports = grammar({
     unary_expression: ($) =>
       prec.right(
         7,
-        seq(
-          field("operator", choice("-", "!", alias("not", $.kw_not))),
-          $.expression,
-        ),
+        seq(field("operator", choice("-", "!", $.not_kw)), $.expression),
       ),
 
     // Binary operators with precedence and associativity
@@ -333,10 +446,10 @@ module.exports = grammar({
                 ">=",
                 "<",
                 ">",
-                alias("lte", $.kw_lte),
-                alias("gte", $.kw_gte),
-                alias("lt", $.kw_lt),
-                alias("gt", $.kw_gt),
+                $.lte_kw,
+                $.gte_kw,
+                $.lt_kw,
+                $.gt_kw,
               ),
             ),
             $.expression,
@@ -346,16 +459,7 @@ module.exports = grammar({
           3,
           seq(
             $.expression,
-            field(
-              "operator",
-              choice(
-                "==",
-                "!=",
-                alias("is", $.kw_is),
-                alias("eq", $.kw_eq),
-                alias("neq", $.kw_neq),
-              ),
-            ),
+            field("operator", choice("==", "!=", $.is_kw, $.eq_kw, $.neq_kw)),
             $.expression,
           ),
         ),
@@ -365,14 +469,7 @@ module.exports = grammar({
             $.expression,
             field(
               "operator",
-              choice(
-                alias("and", $.kw_and),
-                "&&",
-                alias("or", $.kw_or),
-                "||",
-                alias("xor", $.kw_xor),
-                "^",
-              ),
+              choice($.and_kw, "&&", $.or_kw, "||", $.xor_kw, "^"),
             ),
             $.expression,
           ),
@@ -403,33 +500,6 @@ module.exports = grammar({
 
     variable: ($) => seq("$", $.identifier),
 
-    identifier: (_) =>
-      token(
-        new RegExp(
-          [
-            "[A-Za-z_\\u00A8\\u00AA\\u00AD\\u00AF\\u00B2-\\u00B5\\u00B7-\\u00BA",
-            "\\u00BC-\\u00BE\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF",
-            "\\u0100-\\u02FF\\u0370-\\u167F\\u1681-\\u180D\\u180F-\\u1DBF",
-            "\\u1E00-\\u1FFF",
-            "\\u200B-\\u200D\\u202A-\\u202E\\u203F-\\u2040\\u2054\\u2060-\\u206F",
-            "\\u2070-\\u20CF\\u2100-\\u218F\\u2460-\\u24FF\\u2776-\\u2793",
-            "\\u2C00-\\u2DFF\\u2E80-\\u2FFF",
-            "\\u3004-\\u3007\\u3021-\\u302F\\u3031-\\u303F\\u3040-\\uD7FF",
-            "\\uF900-\\uFD3D\\uFD40-\\uFDCF\\uFDF0-\\uFE1F\\uFE30-\\uFE44",
-            "\\uFE47-\\uFFFD]",
-            "[0-9\\u0300-\\u036F\\u1DC0-\\u1DFF\\u20D0-\\u20FF\\uFE20-\\uFE2F",
-            "A-Za-z_\\u00A8\\u00AA\\u00AD\\u00AF\\u00B2-\\u00B5\\u00B7-\\u00BA",
-            "\\u00BC-\\u00BE\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u00FF",
-            "\\u0100-\\u02FF\\u0370-\\u167F\\u1681-\\u180D\\u180F-\\u1DBF",
-            "\\u1E00-\\u1FFF",
-            "\\u200B-\\u200D\\u202A-\\u202E\\u203F-\\u2040\\u2054\\u2060-\\u206F",
-            "\\u2070-\\u20CF\\u2100-\\u218F\\u2460-\\u24FF\\u2776-\\u2793",
-            "\\u2C00-\\u2DFF\\u2E80-\\u2FFF",
-            "\\u3004-\\u3007\\u3021-\\u302F\\u3031-\\u303F\\u3040-\\uD7FF",
-            "\\uF900-\\uFD3D\\uFD40-\\uFDCF\\uFDF0-\\uFE1F\\uFE30-\\uFE44",
-            "\\uFE47-\\uFFFD]*",
-          ].join(""),
-        ),
-      ),
+    identifier: (_) => token(/[A-Za-z_][A-Za-z0-9_]*/),
   },
 });
