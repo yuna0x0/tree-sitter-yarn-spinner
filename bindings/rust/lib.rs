@@ -5,6 +5,10 @@
 //!
 //! ```
 //! let code = r#"
+//! title: Test
+//! ---
+//! This is a test Yarn Spinner script.
+//! ===
 //! "#;
 //! let mut parser = tree_sitter::Parser::new();
 //! let language = tree_sitter_yarn_spinner::LANGUAGE;
