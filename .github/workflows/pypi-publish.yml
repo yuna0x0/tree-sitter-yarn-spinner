@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   # release:
   #   types: [published]
+  # push:
+  #   tags: ['v*']
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -79,6 +81,9 @@ jobs:
     name: Publish to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v5
@@ -94,5 +99,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}

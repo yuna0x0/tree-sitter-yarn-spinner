@@ -4,7 +4,7 @@ endif
 
 LANGUAGE_NAME := tree-sitter-yarn-spinner
 HOMEPAGE_URL := https://github.com/yuna0x0/tree-sitter-yarn-spinner
-VERSION := 0.0.5
+VERSION := 0.0.6
 
 # repository
 SRC_DIR := src
