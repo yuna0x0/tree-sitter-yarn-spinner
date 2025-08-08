@@ -1,7 +1,7 @@
 [package]
 name = "tree-sitter-yarn-spinner"
-description = "Yarn Spinner grammar for tree-sitter"
-version = "0.0.6"
+description = "Tree-sitter grammar for Yarn Spinner"
+version = "0.0.7"
 authors = ["yuna0x0 <yuna@yuna0x0.com>"]
 license = "MIT"
 readme = "README.md"

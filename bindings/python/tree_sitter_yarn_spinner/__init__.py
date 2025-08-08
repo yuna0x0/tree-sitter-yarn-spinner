@@ -1,4 +1,4 @@
-"""Yarn Spinner grammar for tree-sitter"""
+"""Tree-sitter grammar for Yarn Spinner"""
 
 from importlib.resources import files as _files
 

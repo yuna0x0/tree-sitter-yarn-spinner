@@ -12,9 +12,9 @@
     }
   ],
   "metadata": {
-    "version": "0.0.6",
+    "version": "0.0.7",
     "license": "MIT",
-    "description": "Yarn Spinner grammar for tree-sitter",
+    "description": "Tree-sitter grammar for Yarn Spinner",
     "authors": [
       {
         "name": "yuna0x0",

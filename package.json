@@ -1,7 +1,7 @@
 {
   "name": "tree-sitter-yarn-spinner",
-  "version": "0.0.6",
-  "description": "Yarn Spinner grammar for tree-sitter",
+  "version": "0.0.7",
+  "description": "Tree-sitter grammar for Yarn Spinner",
   "repository": "https://github.com/yuna0x0/tree-sitter-yarn-spinner",
   "license": "MIT",
   "author": {
